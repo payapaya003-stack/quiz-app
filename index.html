@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="暗記アプリ">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>資格対策 暗記アプリ</title>
+<style>
+:root{
+  --bg:#f4f6fb; --card:#fff; --text:#1b2433; --sub:#667085; --line:#e3e8f0;
+  --accent:#2563eb; --accent-bg:#e8efff; --ok:#16a34a; --ok-bg:#e7f6ec; --ng:#dc2626; --ng-bg:#fdeaea;
+  --warn:#d97706; --warn-bg:#fff3e0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f141c; --card:#1a2230; --text:#e8edf5; --sub:#98a2b3; --line:#2a3445;
+    --accent:#6b9bff; --accent-bg:#1f2d4d; --ok:#4ade80; --ok-bg:#12301f; --ng:#f87171; --ng-bg:#3a1a1a;
+    --warn:#fbbf24; --warn-bg:#3a2d12;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  font-size:16px;line-height:1.65}
+body{padding:env(safe-area-inset-top) 0 0}
+#app{max-width:680px;margin:0 auto;padding:12px 16px calc(32px + env(safe-area-inset-bottom))}
+h1{font-size:20px;margin:8px 0 2px}
+h2{font-size:15px;margin:0 0 10px}
+.sub{color:var(--sub);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row.between{justify-content:space-between}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-weight:700;background:var(--accent);color:#fff;width:100%}
+.btn.sec{background:var(--accent-bg);color:var(--accent)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:600}
+.btn.danger{background:var(--ng-bg);color:var(--ng)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.small{width:auto;padding:8px 12px;font-size:14px;border-radius:10px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font-size:14px;user-select:none}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.chip small{opacity:.75;margin-left:3px}
+.seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--card);padding:11px 6px;font-size:14px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--accent);color:#fff;font-weight:700}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
+.toggle input{width:22px;height:22px;accent-color:var(--accent)}
+.progress{height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.progress>div{height:100%;background:var(--accent);transition:width .25s}
+.tag{display:inline-block;font-size:12px;background:var(--accent-bg);color:var(--accent);padding:2px 9px;border-radius:999px;margin:0 6px 6px 0;font-weight:600}
+.q{font-size:17px;font-weight:600;margin:6px 0 12px;white-space:pre-wrap;word-break:break-word}
+.choice{display:flex;gap:10px;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);
+  border-radius:12px;padding:12px;margin:8px 0;align-items:flex-start;word-break:break-word}
+.choice .n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent-bg);color:var(--accent);
+  display:grid;place-items:center;font-size:13px;font-weight:800}
+.choice:active:not(:disabled){background:var(--accent-bg)}
+.choice.correct{border-color:var(--ok);background:var(--ok-bg)}
+.choice.correct .n{background:var(--ok);color:#fff}
+.choice.wrong{border-color:var(--ng);background:var(--ng-bg)}
+.choice.wrong .n{background:var(--ng);color:#fff}
+.choice:disabled{cursor:default;color:var(--text)}
+.verdict{font-size:20px;font-weight:800;margin:4px 0 8px}
+.verdict.ok{color:var(--ok)} .verdict.ng{color:var(--ng)}
+.expl{background:var(--accent-bg);border-radius:12px;padding:12px;font-size:15px;white-space:pre-wrap;word-break:break-word}
+.rate button{flex:1;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:10px 4px;font-size:14px;font-weight:700}
+.rate button.on.r1{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.rate button.on.r2{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.rate button.on.r3{background:var(--ng-bg);border-color:var(--ng);color:var(--ng)}
+.score{font-size:54px;font-weight:900;text-align:center;margin:4px 0;line-height:1.1}
+.bar{height:10px;background:var(--line);border-radius:8px;overflow:hidden;flex:1;min-width:80px}
+.bar>div{height:100%;background:var(--ok)}
+.stat-row{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:14px}
+.stat-row .lbl{width:108px;flex:none}
+.stat-row .val{width:76px;flex:none;text-align:right;color:var(--sub);font-variant-numeric:tabular-nums}
+details{border-top:1px solid var(--line);padding:10px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:600;font-size:15px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:9;max-width:90%}
+.sticky-foot{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 24%);padding:18px 0 4px}
+.hidden{display:none!important}
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* ========= ユーティリティ ========= */
+const $app = document.getElementById('app');
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+};
+const el = (tag, attrs = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for(const [k, v] of Object.entries(attrs)){
+    if(k === 'class') e.className = v;
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if(v === true) e.setAttribute(k, '');
+    else if(v !== false && v != null) e.setAttribute(k, v);
+  }
+  for(const kid of kids.flat()){
+    if(kid == null || kid === false) continue;
+    e.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return e;
+};
+const shuffle = (a) => { a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const hash = (s) => { let h = 5381; for(let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+const toast = (msg) => { const t = el('div', {class: 'toast'}, msg); document.body.append(t); setTimeout(() => t.remove(), 2200); };
+
+/* ========= CSV パース (引用符・改行・BOM対応) ========= */
+function parseCSV(text){
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const rows = []; let row = [], f = '', q = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(q){
+      if(c === '"'){ if(text[i+1] === '"'){ f += '"'; i++; } else q = false; }
+      else f += c;
+    } else if(c === '"') q = true;
+    else if(c === ','){ row.push(f); f = ''; }
+    else if(c === '\n' || c === '\r'){
+      if(c === '\r' && text[i+1] === '\n') i++;
+      row.push(f); f = ''; rows.push(row); row = [];
+    } else f += c;
+  }
+  if(f !== '' || row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim() !== ''));
+}
+
+/* 「【R5後・問1】」「【R5後・経営戦略 問1】」から 科目 / 試験回 を取り出す */
+function parseTag(q){
+  const m = q.match(/^\s*【([^】]*)】\s*/);
+  let subject = 'その他', session = '不明', body = q, label = '';
+  if(m){
+    label = m[1]; body = q.slice(m[0].length);
+    const t = m[1].match(/^(R\d+[前後]|H\d+[前後]?|\d{4}[^\s・]*)(?:[・\s]+([^\s・問]+))?/);
+    if(t){ session = t[1]; subject = t[2] || 'マーケティング'; }
+  }
+  return {subject, session, body, label};
+}
+
+function buildDeck(text){
+  const rows = parseCSV(text);
+  if(rows.length < 2) throw new Error('データ行がありません');
+  const head = rows[0].map(s => s.trim());
+  const idx = (names) => head.findIndex(h => names.includes(h));
+  const iQ = idx(['問題']), iA = idx(['正答']), iE = idx(['解説']), iN = idx(['番号']), iG = idx(['ジャンル','分野','科目']);
+  const iW = head.map((h, i) => /^誤答/.test(h) ? i : -1).filter(i => i >= 0);
+  if(iQ < 0 || iA < 0 || !iW.length) throw new Error('「問題」「正答」「誤答」列が見つかりません');
+  const out = [], seen = new Set();
+  for(const r of rows.slice(1)){
+    const qraw = (r[iQ] || '').trim(), ans = (r[iA] || '').trim();
+    if(!qraw || !ans) continue;
+    const wrong = iW.map(i => (r[i] || '').trim()).filter(Boolean);
+    if(!wrong.length) continue;
+    const t = parseTag(qraw);
+    let id = hash(qraw); while(seen.has(id)) id += 'x'; seen.add(id);
+    out.push({
+      id, no: iN >= 0 ? r[iN] : String(out.length + 1),
+      q: t.body, label: t.label,
+      subject: iG >= 0 && (r[iG] || '').trim() ? r[iG].trim() : t.subject,
+      session: t.session,
+      correct: ans, wrong, expl: iE >= 0 ? (r[iE] || '').trim() : ''
+    });
+  }
+  if(!out.length) throw new Error('有効な問題がありませんでした');
+  return out;
+}
+
+/* ========= 状態 ========= */
+let deck = [];
+let deckName = 'ビジキャリ問題集(同梱)';
+let ratings = LS.get('ratings', {});      // id -> 1:得意 2:微妙 3:苦手
+let history = LS.get('history', []);
+let settings = LS.get('settings', {mode: 'all', count: 20, shuffleChoices: true, subjects: null, sessions: null});
+let session = null;   // 出題中のセッション
+
+const RATE = {1: {t: '◎ 得意', c: 'r1'}, 2: {t: '△ 微妙', c: 'r2'}, 3: {t: '× 苦手', c: 'r3'}};
+const saveRatings = () => LS.set('ratings', ratings);
+const saveSettings = () => LS.set('settings', settings);
+
+/* ========= 画面: ホーム ========= */
+function uniq(key){
+  const m = new Map();
+  deck.forEach(q => m.set(q[key], (m.get(q[key]) || 0) + 1));
+  return [...m.entries()];
+}
+function pool(){
+  const subs = settings.subjects, ses = settings.sessions;
+  return deck.filter(q =>
+    (!subs || subs.includes(q.subject)) &&
+    (!ses || ses.includes(q.session)) &&
+    (settings.mode === 'all' || ratings[q.id] === 2 || ratings[q.id] === 3 ||
+      (settings.mode === 'weak+new' && !ratings[q.id]))
+  );
+}
+
+function renderHome(){
+  const subjects = uniq('subject'), sessions = uniq('session');
+  if(!settings.subjects) settings.subjects = subjects.map(x => x[0]);
+  if(!settings.sessions) settings.sessions = sessions.map(x => x[0]);
+  settings.subjects = settings.subjects.filter(s => subjects.some(x => x[0] === s));
+  settings.sessions = settings.sessions.filter(s => sessions.some(x => x[0] === s));
+
+  const cnt = {1: 0, 2: 0, 3: 0, 0: 0};
+  deck.forEach(q => cnt[ratings[q.id] || 0]++);
+  const p = pool();
+
+  const chips = (items, key) => el('div', {class: 'row'}, items.map(([name, n]) => {
+    const on = settings[key].includes(name);
+    return el('button', {class: 'chip' + (on ? ' on' : ''), onclick: () => {
+      settings[key] = on ? settings[key].filter(x => x !== name) : [...settings[key], name];
+      saveSettings(); renderHome();
+    }}, name, el('small', {}, n));
+  }));
+  const selAll = (key, items) => el('button', {class: 'btn ghost small', onclick: () => {
+    settings[key] = settings[key].length === items.length ? [] : items.map(x => x[0]);
+    saveSettings(); renderHome();
+  }}, settings[key].length === items.length ? '全解除' : '全選択');
+
+  const n = Math.min(settings.count === 0 ? p.length : settings.count, p.length);
+
+  $app.replaceChildren(
+    el('h1', {}, '📘 資格対策 暗記アプリ'),
+    el('div', {class: 'sub'}, `${deckName}:${deck.length}問`),
+
+    el('div', {class: 'card'},
+      el('h2', {}, '出題範囲'),
+      el('div', {class: 'seg'},
+        [['all', '全部の問題'], ['weak', '苦手のみ(△×)'], ['weak+new', '苦手+未評価']].map(([v, t]) =>
+          el('button', {class: settings.mode === v ? 'on' : '', onclick: () => { settings.mode = v; saveSettings(); renderHome(); }}, t))),
+      el('div', {class: 'sub', style: 'margin-top:8px'},
+        `評価済み:◎${cnt[1]} / △${cnt[2]} / ×${cnt[3]}　未評価:${cnt[0]}`)
+    ),
+
+    el('div', {class: 'card'},
+      el('div', {class: 'row between'}, el('h2', {}, 'ジャンル(科目)'), selAll('subjects', subjects)),
+      chips(subjects, 'subjects'),
+      el('div', {class: 'row between', style: 'margin-top:14px'}, el('h2', {}, '試験回'), selAll('sessions', sessions)),
+      chips(sessions, 'sessions')
+    ),
+
+    el('div', {class: 'card'},
+      el('h2', {}, '出題数'),
+      el('div', {class: 'seg'}, [[10, '10'], [20, '20'], [50, '50'], [0, '全部']].map(([v, t]) =>
+        el('button', {class: settings.count === v ? 'on' : '', onclick: () => { settings.count = v; saveSettings(); renderHome(); }}, t))),
+      el('label', {class: 'toggle', style: 'margin-top:8px'}, '選択肢の並びをシャッフル',
+        el('input', {type: 'checkbox', checked: settings.shuffleChoices, onchange: (e) => { settings.shuffleChoices = e.target.checked; saveSettings(); }}))
+    ),
+
+    el('button', {class: 'btn', disabled: p.length === 0, onclick: startQuiz},
+      p.length ? `スタート(${n}問 / 対象${p.length}問)` : '対象の問題がありません'),
+
+    el('div', {class: 'card', style: 'margin-top:18px'},
+      el('h2', {}, '問題ファイル(CSV)'),
+      el('div', {class: 'sub'}, '列:番号, 問題, 正答, 誤答１〜, 解説。文字コードはUTF-8。'),
+      el('div', {class: 'row', style: 'margin-top:10px'},
+        el('label', {class: 'btn sec small', for: 'file'}, 'CSVを読み込む'),
+        el('input', {id: 'file', type: 'file', accept: '.csv,text/csv,text/plain', onchange: onFile}),
+        el('button', {class: 'btn ghost small', onclick: resetDeck}, '同梱の問題に戻す'),
+        el('button', {class: 'btn danger small', onclick: () => {
+          if(confirm('苦手度の記録をすべて消去します。よろしいですか?')){ ratings = {}; saveRatings(); renderHome(); }
+        }}, '苦手度をリセット'))
+    ),
+
+    history.length ? el('div', {class: 'card'},
+      el('h2', {}, '過去の成績'),
+      history.slice(0, 8).map(h => el('div', {class: 'stat-row'},
+        el('div', {class: 'lbl sub'}, new Date(h.t).toLocaleString('ja-JP', {month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'})),
+        el('div', {class: 'bar'}, el('div', {style: `width:${h.pct}%`})),
+        el('div', {class: 'val'}, `${h.ok}/${h.done} ${h.pct}%`)))
+    ) : null
+  );
+}
+
+async function onFile(e){
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const buf = await f.arrayBuffer();
+    let text = new TextDecoder('utf-8', {fatal: false}).decode(buf);
+    if(text.includes('�')){ try{ text = new TextDecoder('shift_jis').decode(buf); }catch(_){} }
+    const d = buildDeck(text);
+    deck = d; deckName = f.name;
+    settings.subjects = null; settings.sessions = null;
+    const ok = LS.set('deck', {name: deckName, data: d});
+    saveSettings(); renderHome();
+    toast(`${d.length}問を読み込みました` + (ok ? '' : '(保存容量超過:次回起動時は同梱データに戻ります)'));
+  }catch(err){ toast('読み込み失敗:' + err.message); }
+  e.target.value = '';
+}
+async function resetDeck(){
+  try{ localStorage.removeItem('deck'); }catch(_){}
+  await loadBundled(); settings.subjects = null; settings.sessions = null; renderHome(); toast('同梱の問題に戻しました');
+}
+async function loadBundled(){
+  const res = await fetch('questions.csv'); if(!res.ok) throw new Error('questions.csv を取得できません');
+  deck = buildDeck(await res.text()); deckName = 'ビジキャリ問題集(同梱)';
+}
+
+/* ========= 出題 ========= */
+function startQuiz(){
+  let p = shuffle(pool());
+  if(settings.count > 0) p = p.slice(0, settings.count);
+  session = {qs: p, i: 0, answers: [], picked: null, current: null};
+  renderQuestion();
+}
+
+function prepare(q){
+  const opts = [{t: q.correct, ok: true}, ...q.wrong.map(t => ({t, ok: false}))];
+  return settings.shuffleChoices ? shuffle(opts) : opts;
+}
+
+function renderQuestion(){
+  const s = session, q = s.qs[s.i];
+  s.current = s.current && s.current.id === q.id ? s.current : {id: q.id, opts: prepare(q)};
+  const answered = s.picked != null;
+  const done = s.answers.length;
+  const ok = s.answers.filter(a => a.ok).length;
+
+  const choices = s.current.opts.map((o, i) => {
+    let cls = 'choice';
+    if(answered){ if(o.ok) cls += ' correct'; else if(i === s.picked) cls += ' wrong'; }
+    return el('button', {class: cls, disabled: answered, onclick: () => answer(i)},
+      el('span', {class: 'n'}, '①②③④⑤⑥'[i] || i + 1), el('span', {}, o.t));
+  });
+
+  const rate = ratings[q.id] || 0;
+  $app.replaceChildren(
+    el('div', {class: 'row between'},
+      el('div', {class: 'sub'}, `${s.i + 1} / ${s.qs.length}　正解 ${ok}/${done}`),
+      el('button', {class: 'btn ghost small', onclick: () => {
+        if(!answered && done === 0){ if(!confirm('1問も解答していません。ホームに戻りますか?')) return; session = null; return renderHome(); }
+        if(confirm('ここで終了してスコアを表示しますか?')) finish();
+      }}, '終了してスコア')),
+    el('div', {class: 'progress', style: 'margin:8px 0 12px'}, el('div', {style: `width:${(s.i + (answered ? 1 : 0)) / s.qs.length * 100}%`})),
+    el('div', {class: 'card'},
+      el('div', {}, el('span', {class: 'tag'}, q.subject), el('span', {class: 'tag'}, q.session),
+        rate ? el('span', {class: 'tag'}, '現在の評価 ' + RATE[rate].t) : null),
+      el('div', {class: 'q'}, q.q),
+      choices,
+      answered ? el('div', {},
+        el('div', {class: 'verdict ' + (s.answers[s.answers.length - 1].ok ? 'ok' : 'ng')},
+          s.answers[s.answers.length - 1].ok ? '⭕ 正解!' : '❌ 不正解'),
+        el('div', {class: 'sub', style: 'margin-bottom:6px'}, '正答:' + q.correct),
+        q.expl ? el('div', {class: 'expl'}, q.expl) : null,
+        el('h2', {style: 'margin:16px 0 8px'}, 'この問題の苦手度(任意)'),
+        el('div', {class: 'row rate'}, [1, 2, 3].map(r =>
+          el('button', {class: (rate === r ? 'on ' : '') + RATE[r].c, onclick: () => {
+            ratings[q.id] = rate === r ? 0 : r; if(!ratings[q.id]) delete ratings[q.id];
+            saveRatings(); renderQuestion();
+          }}, RATE[r].t)))
+      ) : null
+    ),
+    answered ? el('div', {class: 'sticky-foot'},
+      el('button', {class: 'btn', onclick: next}, s.i + 1 >= s.qs.length ? '結果を見る' : '次の問題へ')) : null
+  );
+  window.scrollTo(0, 0);
+}
+
+function answer(i){
+  const s = session, q = s.qs[s.i], o = s.current.opts[i];
+  s.picked = i;
+  s.answers.push({id: q.id, ok: o.ok, picked: o.t});
+  renderQuestion();
+  setTimeout(() => document.querySelector('.verdict')?.scrollIntoView({behavior: 'smooth', block: 'center'}), 50);
+}
+function next(){
+  const s = session;
+  if(s.i + 1 >= s.qs.length) return finish();
+  s.i++; s.picked = null; s.current = null; renderQuestion();
+}
+
+/* ========= 結果 ========= */
+function finish(){
+  const s = session;
+  const done = s.answers.length, ok = s.answers.filter(a => a.ok).length;
+  const pct = done ? Math.round(ok / done * 100) : 0;
+  if(done){
+    history.unshift({t: Date.now(), ok, done, pct}); history = history.slice(0, 30); LS.set('history', history);
+  }
+  const byId = Object.fromEntries(s.qs.map(q => [q.id, q]));
+  const group = (key) => {
+    const m = new Map();
+    s.answers.forEach(a => { const k = byId[a.id][key]; const v = m.get(k) || {ok: 0, n: 0}; v.n++; if(a.ok) v.ok++; m.set(k, v); });
+    return [...m.entries()];
+  };
+  const stat = (name, v) => el('div', {class: 'stat-row'},
+    el('div', {class: 'lbl'}, name), el('div', {class: 'bar'}, el('div', {style: `width:${v.ok / v.n * 100}%`})),
+    el('div', {class: 'val'}, `${v.ok}/${v.n} (${Math.round(v.ok / v.n * 100)}%)`));
+  const wrongs = s.answers.filter(a => !a.ok);
+  const skipped = s.qs.length - done;
+  const grade = pct >= 80 ? '🎉 合格圏!' : pct >= 60 ? '👍 あと少し' : done ? '💪 復習しましょう' : '';
+
+  $app.replaceChildren(
+    el('h1', {}, 'スコア'),
+    el('div', {class: 'card'},
+      el('div', {class: 'score', style: `color:var(${pct >= 60 ? '--ok' : '--ng'})`}, done ? pct + '%' : '—'),
+      el('div', {style: 'text-align:center;font-weight:700'}, `${ok} / ${done} 問正解 ${grade}`),
+      skipped ? el('div', {class: 'sub', style: 'text-align:center'}, `未解答 ${skipped}問(スコアには含まれません)`) : null
+    ),
+    done ? el('div', {class: 'card'},
+      el('h2', {}, '科目別'), group('subject').map(([k, v]) => stat(k, v)),
+      el('h2', {style: 'margin-top:14px'}, '試験回別'), group('session').map(([k, v]) => stat(k, v))
+    ) : null,
+    wrongs.length ? el('div', {class: 'card'},
+      el('h2', {}, `間違えた問題(${wrongs.length})`),
+      wrongs.map(a => { const q = byId[a.id]; const r = ratings[q.id];
+        return el('details', {},
+          el('summary', {}, `【${q.label || q.session}】` + q.q.slice(0, 46) + (q.q.length > 46 ? '…' : '')),
+          el('div', {class: 'q', style: 'font-size:15px;margin-top:8px'}, q.q),
+          el('div', {class: 'sub'}, 'あなたの回答:' + a.picked),
+          el('div', {style: 'color:var(--ok);font-weight:700;margin:4px 0'}, '正答:' + q.correct),
+          q.expl ? el('div', {class: 'expl'}, q.expl) : null,
+          el('div', {class: 'row rate', style: 'margin-top:8px'}, [1, 2, 3].map(x =>
+            el('button', {class: (ratings[q.id] === x ? 'on ' : '') + RATE[x].c, onclick: (ev) => {
+              ratings[q.id] = x; saveRatings();
+              ev.target.parentElement.querySelectorAll('button').forEach((b, i) => b.className = (i + 1 === x ? 'on ' : '') + RATE[i + 1].c);
+            }}, RATE[x].t))));
+      })
+    ) : null,
+    el('div', {class: 'card'},
+      wrongs.length ? el('button', {class: 'btn sec', style: 'margin-bottom:8px', onclick: () => {
+        const ids = new Set(wrongs.map(a => a.id));
+        session = {qs: shuffle(s.qs.filter(q => ids.has(q.id))), i: 0, answers: [], picked: null, current: null};
+        renderQuestion();
+      }}, `間違えた${wrongs.length}問をもう一度`) : null,
+      el('button', {class: 'btn', onclick: () => { session = null; renderHome(); }}, 'ホームに戻る'))
+  );
+  window.scrollTo(0, 0);
+}
+
+/* ========= 起動 ========= */
+(async function init(){
+  try{
+    const saved = LS.get('deck', null);
+    if(saved && Array.isArray(saved.data) && saved.data.length){ deck = saved.data; deckName = saved.name; }
+    else await loadBundled();
+    renderHome();
+  }catch(err){
+    $app.replaceChildren(el('h1', {}, '読み込みエラー'), el('div', {class: 'card'}, String(err.message),
+      el('div', {class: 'row', style: 'margin-top:10px'},
+        el('label', {class: 'btn sec small', for: 'file'}, 'CSVを選択'),
+        el('input', {id: 'file', type: 'file', accept: '.csv,text/csv', onchange: async (e) => { await onFile(e); }}))));
+  }
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
